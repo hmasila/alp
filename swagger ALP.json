@@ -1,0 +1,721 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "The ALP API uses HTTPS methods and RESTful endpoints to create, edit, and manage orders in the ALP system. JSON is used as the data interchange format. In order to use this API, you need a client account with valid credentials and an API Secret. To get your own API secret login into ALP and visit User Profile page. API secret can be regenerated here as well.Each Request must contains these two headers: X-Requested-With: XMLHttpRequest, Content-Auth: API_SECRET.We accept up to 50 requests per Minute. If you send more than 50 requests you will get 429 status.All Dates in request and response should have Y-m-d format. We accept up to 50 requests per Minute. If you send more than 50 requests you will get 429 status.All Dates in request and response should have Y-m-d format.Also, You can download (https://docs.alp.alcolm.com/client/v2/collection.json) POSTMAN API collection",
+    "version": "1.0.0",
+    "title": "ALP"
+  },
+  "host": "alp.alcolm.com",
+  "basePath": "/api/v2/client",
+  "tags": [
+    {
+      "name": "order",
+      "description": "Everything about your Orders"
+    },
+    {
+      "name": "location",
+      "description": "Access to Location"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/orders/store": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Store a new order",
+        "description": "API used to Store a new order.  https://alp.alcolm.com/api/v2/client/orders/store",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Store a new order",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Update order",
+        "description": "API used to Update order.  https://alp.alcolm.com/api/v2/client/orders/store/update",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Update order",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/OrderUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/transfer/order/to/next/client": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Transfer ownership to another client",
+        "description": "change order ownership. API can be called after inbound process is completed and are in status 'Stocked'. Make sure call_off_date_importer field is blank. https://alp.alcolm.com/api/v2/client/orders/update/transfer/order/to/next/client",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "change order ownership",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderChangeOwnership"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is "
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/dealer/to/dealer/call/off/date": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "create Dealer To Dealer transport request",
+        "description": "API used to create a transport request for dealer to dealer. call_off_date_importer and reexport_call_off_date_importer have to be null. https://alp.alcolm.com/api/v2/client/orders/update/dealer/to/dealer/call/off/date",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "create a transport request for dealer to dealer.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderUpdateDTD"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/reexport/call/off/date": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "create a Reexport/Self Pickup transport request",
+        "description": "API used to create a Reexport/Self Pickup transport request. call_off_date_importer has to be null. https://alp.alcolm.com/api/v2/client/orders/update/reexport/call/off/date",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "create a Reexport/Self Pickup transport request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderReexportCall"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/compound/to/compound": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "create a Compound to Compound transport request",
+        "description": "API used to create a transport request for Compound to Compound(CC). call_off_date_importer and reexport_call_off_date_importer have to be null. https://alp.alcolm.com/api/v2/client/orders/update/compound/to/compound",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "create a Compound to Compound transport request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderCTCCall"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/call/off/date": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Send Outbound call off request",
+        "description": "API used to send call off request for Outbound, updatable one time. Request will be created immediately independent of the date sent in the request. dd_call_off_date_importer and reexport_call_off_date_importer have to be null. https://alp.alcolm.com/api/v2/client/orders/update/call/off/date",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Send Outbound call off request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderUpdateCallOffDate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/locations/store": {
+      "post": {
+        "tags": [
+          "location"
+        ],
+        "summary": "create location",
+        "description": "API Used to Create Location and Get Location Code. If the requested location is existing you will receive the code otherwise it will be created in the system and you will receive a new location code. https://alp.alcolm.com/api/v2/client/locations/store",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create Location and Get Location Code.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Location"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/detail/{ORDER_ID}": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "get all order details",
+        "description": "API used to get all order details. https://http://alp.alcolm.com/api/v2/client/orders/detail/{ORDER_ID}",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ORDER_ID",
+            "description": "get all order details.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/reset/transport/request": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Reset Transport Request",
+        "description": "API used to Reset/Delete Transport Request. https://alp.alcolm.com/api/v2/client/orders/reset/transport/request",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Order": {
+      "type": "object",
+      "required": [
+        "order_type",
+        "order_code",
+        "brand_name",
+        "factory_reference_number",
+        "model_code",
+        "version_type",
+        "category",
+        "fuel_type",
+        "delivery_place_importer"
+      ],
+      "properties": {
+        "order_type": {
+          "type": "string",
+          "description": "1 or 2. 1 means client related (will be handled with priority).2 means for stock",
+          "enum": [
+            "1",
+            "2"
+          ]
+        },
+        "order_code": {
+          "type": "integer"
+        },
+        "brand_name": {
+          "type": "string"
+        },
+        "factory_reference_number": {
+          "type": "string"
+        },
+        "order_country": {
+          "type": "string"
+        },
+        "mpo_number": {
+          "type": "string"
+        },
+        "model_code": {
+          "type": "string"
+        },
+        "version_type": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "fuel_type": {
+          "type": "string"
+        },
+        "vin_number": {
+          "type": "integer"
+        },
+        "invoice_number_importer": {
+          "type": "string"
+        },
+        "delivery_place_importer": {
+          "type": "string"
+        },
+        "destination_country_importer": {
+          "type": "string"
+        },
+        "dealer_id": {
+          "type": "string"
+        },
+        "dealer_name": {
+          "type": "string"
+        },
+        "delivery_place_dealer": {
+          "type": "string"
+        },
+        "destination_country_dealer": {
+          "type": "string"
+        },
+        "model_description": {
+          "type": "string"
+        },
+        "expected_production_date": {
+          "type": "string"
+        },
+        "actual_production_date": {
+          "type": "string"
+        },
+        "manufacturer_invoice_date": {
+          "type": "string"
+        },
+        "invoice_date_importer": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "Order"
+      }
+    },
+    "OrderUpdate": {
+      "type": "object",
+      "properties": {
+        "order_type": {
+          "type": "string",
+          "description": "pet status in the store",
+          "enum": [
+            "1",
+            "2"
+          ]
+        },
+        "order_code": {
+          "type": "integer"
+        },
+        "brand_name": {
+          "type": "string"
+        },
+        "factory_reference_number": {
+          "type": "string"
+        },
+        "order_country": {
+          "type": "string"
+        },
+        "mpo_number": {
+          "type": "string"
+        },
+        "model_code": {
+          "type": "string"
+        },
+        "version_type": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "fuel_type": {
+          "type": "string"
+        },
+        "vin_number": {
+          "type": "integer"
+        },
+        "invoice_number_importer": {
+          "type": "string"
+        },
+        "delivery_place_importer": {
+          "type": "string"
+        },
+        "destination_country_importer": {
+          "type": "string"
+        },
+        "dealer_id": {
+          "type": "string"
+        },
+        "dealer_name": {
+          "type": "string"
+        },
+        "delivery_place_dealer": {
+          "type": "string"
+        },
+        "destination_country_dealer": {
+          "type": "string"
+        },
+        "model_description": {
+          "type": "string"
+        },
+        "expected_production_date": {
+          "type": "string"
+        },
+        "actual_production_date": {
+          "type": "string"
+        },
+        "manufacturer_invoice_date": {
+          "type": "string"
+        },
+        "invoice_date_importer": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "OrderUpdate"
+      }
+    },
+    "OrderChangeOwnership": {
+      "type": "object",
+      "required": [
+        "order_code",
+        "identification_number"
+      ],
+      "properties": {
+        "order_code": {
+          "type": "integer"
+        },
+        "identification_number": {
+          "type": "integer"
+        }
+      },
+      "xml": {
+        "name": "OrderChangeOwnership"
+      }
+    },
+    "OrderUpdateDTD": {
+      "type": "object",
+      "required": [
+        "order_code",
+        "dd_location",
+        "dd_call_off_date_importer"
+      ],
+      "properties": {
+        "order_code": {
+          "type": "integer"
+        },
+        "dd_location": {
+          "type": "string"
+        },
+        "dd_call_off_date_importer": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "OrderChangeOwnership"
+      }
+    },
+    "OrderReexportCall": {
+      "type": "object",
+      "required": [
+        "order_code",
+        "reexport_call_off_date_importer",
+        "reexport_location"
+      ],
+      "properties": {
+        "order_code": {
+          "type": "integer"
+        },
+        "reexport_call_off_date_importer": {
+          "type": "string"
+        },
+        "reexport_location": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "OrderReexportCall"
+      }
+    },
+    "OrderCTCCall": {
+      "type": "object",
+      "required": [
+        "order_code",
+        "second_delivery_place_importer",
+        "call_off_date_importer"
+      ],
+      "properties": {
+        "order_code": {
+          "type": "integer"
+        },
+        "second_delivery_place_importer": {
+          "type": "string"
+        },
+        "call_off_date_importer": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "OrderCTCCall"
+      }
+    },
+    "OrderUpdateCallOffDate": {
+      "type": "object",
+      "required": [
+        "order_code",
+        "call_off_date_importer"
+      ],
+      "properties": {
+        "order_code": {
+          "type": "integer"
+        },
+        "call_off_date_importer": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "OrderUpdateCallOffDate"
+      }
+    },
+    "Location": {
+      "type": "object",
+      "required": [
+        "street",
+        "street_no",
+        "zip",
+        "city",
+        "country"
+      ],
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "street_no": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "integer"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "Location"
+      }
+    }
+  }
+}
