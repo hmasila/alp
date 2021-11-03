@@ -1,0 +1,1959 @@
+---
+openapi: 3.0.0
+info:
+  title: Alcom API Documentation
+  description: |
+    # Overview
+    The ALP API uses HTTPS methods and RESTful endpoints to create, edit, and manage orders in the ALP system. JSON is used as the data interchange format.
+
+    In order to use this API, you need a client account with valid credentials and an API Secret. To get your own API secret login into ALP and visit User Profile page. API secret can be regenerated here as well.
+
+    Each Request must contains these two headers
+
+    We accept up to 50 requests per Minute. If you send more than 50 requests you will get 429 status.
+
+    All Dates in request and response should have Y-m-d format.
+    This documentation is divided into two sections:
+    1. APIs - Client to call the URL to update the data in the ALP system.
+    2. Webhooks - ALP system will call the defined URL when a specific action has been performed.
+
+    All API and Webhook URLs must be POST methods
+
+    # Changelog
+    We will list any changes to the current version of the API here.
+
+    | Date      | Details of changes |
+    | ----------- | ----------- |
+    |       |        |
+
+    # API basics
+
+    ## API routes
+    Each API endpoint is available on our new API platform <code> https://alp.alcolm.com.</code>
+
+    > Endpoints are usually defined with a relative path.
+
+    Each relative path must be combined with the API platform URL. For the example this would result in the endpoint <code>https://alp.alcolm.com/api/contacts</code>
+
+    ## HTTP Verbs
+    Where possible, bexio tries to use the appropriate HTTP verb for its operations
+
+    | Verb      | Description |
+    | ----------- | ----------- |
+    |  <code>GET</code>     |   Used for retrieving resources     |
+    |  <code>POST</code>     |   Used for creating resources     |
+    |  <code>PATCH</code>     |   Used for updating resources with partial data     |
+    |  <code>PUT</code>     |   Used for updating resources with full data     |
+    |  <code>DELETE</code>     |   Used for deleting resources. Please note that delete actions permanently delete resources. It cannot be undone.    |
+
+
+    ## HTTP Headers
+
+    HTTP headers let the client and the server pass additional information with an HTTP request or response. An HTTP header consists of its case-insensitive name followed by a colon (:), then by its value.
+
+    ### Request Headers
+
+    The following headers must be used for every request:
+
+    - <code> Accept: application/json </code>
+    - <code>Authorization: Bearer <token></code>
+
+    Additionally, the header <code>Content-Length: <length></code> must be specified for requests with a payload.
+
+    ## Response Headers
+
+    The API will always indicate the return type with a <code>Content-Type</code> header. Normally the header value is set to <code>application/json</code>, but can vary (e.g. for PDF exports).
+
+    Response Codes Actions and errors yield different HTTP response codes. Please have a look at the expected response codes in the following list:
+
+    | Code      | Description |
+    | ----------- | ----------- |
+    | 200 | Request OK |
+    | 201 | New resource created |
+    | 304 | The resource has not been changed |
+    | 400 | The request parameters are invalid |
+    | 401 | The bearer token or the provided api key is invalid |
+    | 403 | You do not possess the required rights to access this resource |
+    | 404 | The resource could not be found / is unknown |
+    | 411 | Length Required |
+    | 415 | The data could not be processed or the accept header is invalid |
+    | 422 | Could not save the entity |
+    | 429 | Too many requests |
+    | 500 | An unexpected condition was encountered |
+    | 503 | The server is not available (maintenance work) |
+
+    ## Errors
+    > Error responses contain an HTTP status code and a JSON response body that is structured as follows:
+
+    ```javaScript
+    {
+        "error_code": 404,
+        "message": "Page not found"
+    }
+    ```
+
+    ## Rate Limiting
+    The Alcolm API enforces a rate limit that limits the number of requests an API client can make in a given period of time. If any of the limits is being reached, the API will return a 429 status code to the client.
+
+    <aside class="notice">
+      Please note that the rate limit quota is not currently part of the server response. We are considering ways to improve this.
+    </aside>
+  version: 1.0.0
+  x-logo:
+    url: logo.png
+    backgroundColor: "#10303d"
+    altText: Alcom logo
+tags:
+- name: Auth
+  description: Authorize user or get the logged in user
+- name: Dropdowns
+  description: Access to dropdowns
+- name: Contacts
+  description: Operations about contacts
+- name: Locations
+  description: Operations about locations
+- name: Inbound
+  description: Operations about inbound
+- name: Spot
+  description: Operations about spot
+- name: Damages
+  description: Operations about damages
+- name: Stock
+  description: Operations about stock
+- name: Additional Service Requests
+  description: Operations about additional service request list
+- name: CC Pickup Announcements
+  description: Operations about cc pickup announcement list
+- name: Reexport
+  description: Operations about re-export
+- name: Pickup Announcements Lists
+  description: Operations about pickup announcement lists
+- name: Pickup Announcements
+  description: Operations about pickup announcements
+- name: Delivery Request
+  description: Operations about delivery request
+- name: Upload Doc
+- name: Order
+  description: Everything about your Orders
+- name: Location
+  description: Access to Location
+x-tagGroups:
+- name: Vehicle Arrivals
+  tags:
+  - Inbound
+  - Spot
+- name: Re export
+  tags:
+  - Reexport
+  - Pickup Announcements Lists
+- name: Compound
+  tags:
+  - Damages
+  - Stock
+  - Additional Service Requests
+  - CC Pickup Announcements
+- name: Outbound
+  tags:
+  - Pickup Announcements
+  - Delivery Request
+- name: Other Endpoints
+  tags:
+  - Auth
+  - Dropdowns
+  - Contacts
+  - Locations
+  - Upload Doc
+  - Order
+paths:
+  "/api/a/auth/user":
+    get:
+      tags:
+      - Auth
+      summary: Get the current user
+      operationId: getUser
+      x-codeSamples:
+        lang: JavaScript
+        source: console.log('Hello World');
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        '405':
+          description: Invalid input
+      security:
+      - api_key: []
+  "/api/a/auth/sign/in":
+    post:
+      tags:
+      - Auth
+      summary: Logs user into the system
+      operationId: loginUser
+      parameters:
+      - name: email
+        in: query
+        description: The email for login
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: password
+        in: query
+        description: The password for login
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              style: simple
+              explode: false
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid email/password supplied
+  "/api/dropdowns/countries":
+    get:
+      tags:
+      - Dropdowns
+      summary: Get a list of countries
+      description: Pass the Content-Timezone and Authorization in the header
+      operationId: getCountries
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Country"
+        '400':
+          description: Invalid status value
+      security:
+      - api_key: []
+  "/api/contacts":
+    get:
+      tags:
+      - Contacts
+      summary: Returns a list of contacts
+      description: Returns a list of contacts with pagination
+      operationId: getContacts
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Contact"
+      security:
+      - api_key: []
+  "/api/contacts/create":
+    post:
+      tags:
+      - Contacts
+      summary: Create contact
+      operationId: createContact
+      requestBody:
+        description: create contact
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Contact"
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Contact"
+        '400':
+          description: Invalid Contact
+      security:
+      - api_key: []
+  "/api/contacts/detail/{id}":
+    get:
+      tags:
+      - Contacts
+      summary: Edit contact
+      description: Edit a contact with the given id
+      operationId: editContact
+      parameters:
+      - name: id
+        in: path
+        description: ID of contact to edit
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Contact"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Contact not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Contacts
+      summary: Update contact
+      description: Update a contact with the given id
+      operationId: updateContact
+      parameters:
+      - name: id
+        in: path
+        description: ID of contact to edit
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Contact"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Contact not found
+      security:
+      - api_key: []
+    delete:
+      tags:
+      - Contacts
+      summary: Delete a contact
+      description: Delete a contact with the given id
+      operationId: deleteContact
+      parameters:
+      - name: id
+        in: path
+        description: ID of the contact that needs to be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Contact not found
+      security:
+      - api_key: []
+  "/api/locations":
+    get:
+      tags:
+      - Locations
+      summary: Returns a list of locations
+      description: Returns a list of locations with pagination
+      operationId: getLocations
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/locations/create":
+    post:
+      tags:
+      - Locations
+      summary: Create Location
+      operationId: createLocation
+      requestBody:
+        description: create location
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Location"
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid Location
+      security:
+      - api_key: []
+  "/api/locations/detail/{id}":
+    get:
+      tags:
+      - Locations
+      summary: Edit location
+      description: Edit a location with the given id
+      operationId: editLocation
+      parameters:
+      - name: id
+        in: path
+        description: ID of location to edit
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Locations
+      summary: Update location
+      description: Update a location with the given id
+      operationId: updateLocation
+      parameters:
+      - name: id
+        in: path
+        description: ID of location to edit
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    delete:
+      tags:
+      - Locations
+      summary: Delete a Location
+      description: Delete a location with the given id
+      operationId: deleteLocation
+      parameters:
+      - name: id
+        in: path
+        description: ID of the location that needs to be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/inbound/loads/compound/supplier":
+    get:
+      tags:
+      - Inbound
+      summary: Returns a list of inbounds
+      description: Get inbound list
+      operationId: getInbounds
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/inbound/loads/compound/supplier/detail/{id}":
+    get:
+      tags:
+      - Inbound
+      summary: Returns inbound details
+      description: Get inbound details with the given id
+      operationId: getInboundDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of inbound details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Inbound
+      summary: Update inbound
+      description: Update inbound with the given id
+      operationId: updateInbound
+      parameters:
+      - name: id
+        in: path
+        description: ID of inbound to edit
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/spot/loads/compound/supplier":
+    get:
+      tags:
+      - Spot
+      summary: Returns a list of spots
+      description: Get spot list
+      operationId: getSpots
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/spot/loads/compound/supplier/detail/{id}":
+    get:
+      tags:
+      - Spot
+      summary: Returns spot details
+      description: Get spot details with the given id
+      operationId: getSpotDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of spot details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Spot
+      summary: Update spot
+      description: Update spot with the given id
+      operationId: updateSpot
+      parameters:
+      - name: id
+        in: path
+        description: ID of spot to edit
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier/damages":
+    get:
+      tags:
+      - Damages
+      summary: Returns a list of all damages
+      description: Get all damages
+      operationId: getDamage
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier/damages/{id}":
+    get:
+      tags:
+      - Damages
+      summary: Returns damage details
+      description: Get damage details with the given id
+      operationId: getDamageDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of Damage details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Damages
+      summary: Update or repair damage
+      description: Update or repair damage with the given id
+      operationId: updateDamage
+      parameters:
+      - name: id
+        in: path
+        description: ID of damaged item to repair
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier":
+    get:
+      tags:
+      - Stock
+      summary: Returns a list of all stock
+      description: Get all stock
+      operationId: getStock
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier/detail/{id}":
+    get:
+      tags:
+      - Stock
+      summary: Returns stock details
+      description: Get stock details with the given id
+      operationId: getStockDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of stock details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Stock
+      summary: Update stock status
+      description: Update stock with the given id
+      operationId: updateStock
+      parameters:
+      - name: id
+        in: path
+        description: ID of damaged item to repair
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier/services":
+    get:
+      tags:
+      - Additional Service Requests
+      summary: Returns a list of additional service requests
+      description: Get additional service request list
+      operationId: getASRList
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier/additional/service/detail/{id}":
+    get:
+      tags:
+      - Additional Service Requests
+      summary: Returns additional service request details
+      description: Get additional service request details with the given id
+      operationId: getASRDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of additional service request details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Additional Service Requests
+      summary: Update additional service request
+      description: Update additional service request with the given id
+      operationId: updateASR
+      parameters:
+      - name: id
+        in: path
+        description: ID of additional service request to update
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/inbound/loads/compound/supplier/cc/pick/up/announcements":
+    get:
+      tags:
+      - CC Pickup Announcements
+      summary: Returns a list of cc pickup announcements
+      description: Get cc pickup announcements list
+      operationId: getPickup
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/inbound/loads/compound/supplier/cc/pick/up/announcements/detail/{id}":
+    get:
+      tags:
+      - CC Pickup Announcements
+      summary: Returns cc pickup announcements details
+      description: Get cc pickup announcements details with the given id
+      operationId: getPickupDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of cc pickup announcements details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/reexport/loads/compound/supplier":
+    get:
+      tags:
+      - Reexport
+      summary: Returns a list of reexports
+      description: Get Reexport
+      operationId: getReexport
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/reexport/loads/compound/supplier/detail/{id}":
+    get:
+      tags:
+      - Reexport
+      summary: Returns reexport details
+      description: Get reexport details with the given id
+      operationId: getReexportDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of reexport details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    put:
+      tags:
+      - Reexport
+      summary: Update additional service request
+      description: Update additional service request with the given id
+      operationId: update_compound_supplier_detail
+      parameters:
+      - name: id
+        in: path
+        description: ID of additional service request to update
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/reexport/loads/compound/supplier/pick/up/announcements":
+    get:
+      tags:
+      - Pickup Announcements Lists
+      summary: Returns a list of reexports pickup announcements
+      description: Get Reexport pickup announcements lists
+      operationId: getReexportAnnouncements
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/reexport/loads/compound/supplier/detail":
+    get:
+      tags:
+      - Pickup Announcements Lists
+      summary: Returns a list of reexports pickup announcements details
+      description: Get Reexport pickup announcements details lists
+      operationId: getReexportAnnouncementsDetails
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/reexport/loads/compound/supplier/unload/confirm":
+    post:
+      tags:
+      - Pickup Announcements Lists
+      summary: Reexport pickup announcements getout confirmation
+      description: Reexport pickup announcements getout confirmation
+      operationId: getoutConfirm
+      requestBody:
+        description: getout confirmation
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Reexport"
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/outbound/loads/compound/supplier/pick/up/announcements":
+    get:
+      tags:
+      - Pickup Announcements
+      summary: Returns a list of outbound pickup announcements
+      description: Get  pickup announcements  lists
+      operationId: getOutboundPickup
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/outbound/loads/compound/supplier/detail/{id}":
+    get:
+      tags:
+      - Pickup Announcements
+      summary: Returns a list of a pickup announcement details
+      description: Get outbound pickup anounement details with the given id
+      operationId: getPickupAnnouncementsDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of reexport details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier/transport/requests":
+    get:
+      tags:
+      - Delivery Request
+      summary: Returns a list of all delivery requests
+      description: Get delivery request lists
+      operationId: getDeliveryRequest
+      parameters:
+      - name: page
+        in: query
+        description: The page to fetch
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Location"
+      security:
+      - api_key: []
+  "/api/orders/compound/supplier/transport/requests/{id}":
+    get:
+      tags:
+      - Delivery Request
+      summary: Returns a list of delivery request details
+      description: Get delivery request details with the given id
+      operationId: getDeliveryRequestDetails
+      parameters:
+      - name: id
+        in: path
+        description: ID of delivery request details to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+    post:
+      tags:
+      - Delivery Request
+      summary: Accept Delivery request
+      description: Accept Delivery request with the given id
+      operationId: postAcceptRequest
+      parameters:
+      - name: id
+        in: path
+        description: ID of delivery request to edit
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Location"
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Location not found
+      security:
+      - api_key: []
+  "/api/upload":
+    post:
+      tags:
+      - Upload Doc
+      summary: Upload a file
+      operationId: uploadFile
+      requestBody:
+        description: create contact
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Contact"
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Contact"
+        '400':
+          description: Invalid Contact
+      security:
+      - api_key: []
+  "/orders/store":
+    post:
+      tags:
+      - Order
+      summary: Store a new order
+      description: API used to Store a new order.  https://alp.alcolm.com/api/v2/client/orders/store
+      operationId: storeOrder
+      parameters:
+      - in: body
+        name: body
+        description: Store a new order
+        required: true
+        schema:
+          "$ref": "#/definitions/Order"
+      requestBody:
+        description: create store
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Order"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/update":
+    post:
+      tags:
+      - Order
+      summary: Update order
+      description: API used to Update order.  https://alp.alcolm.com/api/v2/client/orders/store/update
+      operationId: updateOrder
+      parameters:
+      - in: body
+        name: body
+        description: Update order
+        required: false
+        schema:
+          "$ref": "#/definitions/OrderUpdate"
+      requestBody:
+        description: update order
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrderUpdate"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/update/transfer/order/to/next/client":
+    post:
+      tags:
+      - Order
+      summary: Transfer ownership to another client
+      description: change order ownership. API can be called after inbound process
+        is completed and are in status 'Stocked'. Make sure call_off_date_importer
+        field is blank. https://alp.alcolm.com/api/v2/client/orders/update/transfer/order/to/next/client
+      operationId: transferOrder
+      parameters:
+      - in: body
+        name: body
+        description: change order ownership
+        required: true
+        schema:
+          "$ref": "#/definitions/OrderChangeOwnership"
+      requestBody:
+        description: transfer order
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrderChangeOwnership"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: 'Request or order number is '
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/update/dealer/to/dealer/call/off/date":
+    post:
+      tags:
+      - Order
+      summary: create Dealer To Dealer transport request
+      description: API used to create a transport request for dealer to dealer. call_off_date_importer
+        and reexport_call_off_date_importer have to be null. https://alp.alcolm.com/api/v2/client/orders/update/dealer/to/dealer/call/off/date
+      parameters:
+      - in: body
+        name: body
+        description: create a transport request for dealer to dealer.
+        required: true
+        schema:
+          "$ref": "#/definitions/OrderUpdateDTD"
+      operationId: createDealer
+      requestBody:
+        description: create a transport request for dealer to dealer.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrderUpdateDTD"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/update/reexport/call/off/date":
+    post:
+      tags:
+      - Order
+      summary: create a Reexport/Self Pickup transport request
+      description: API used to create a Reexport/Self Pickup transport request. call_off_date_importer
+        has to be null. https://alp.alcolm.com/api/v2/client/orders/update/reexport/call/off/date
+      parameters:
+      - in: body
+        name: body
+        description: create a Reexport/Self Pickup transport request.
+        required: true
+        schema:
+          "$ref": "#/definitions/OrderReexportCall"
+      requestBody:
+        description: create a Reexport/Self Pickup transport request.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrderReexportCall"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/update/compound/to/compound":
+    post:
+      tags:
+      - Order
+      summary: create a Compound to Compound transport request
+      description: API used to create a transport request for Compound to Compound(CC).
+        call_off_date_importer and reexport_call_off_date_importer have to be null.
+        https://alp.alcolm.com/api/v2/client/orders/update/compound/to/compound
+      parameters:
+      - in: body
+        name: body
+        description: create a Compound to Compound transport request.
+        required: true
+        schema:
+          "$ref": "#/definitions/OrderCTCCall"
+      requestBody:
+        description: create a Compound to Compound transport request.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrderCTCCall"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/update/call/off/date":
+    post:
+      tags:
+      - Order
+      summary: Send Outbound call off request
+      description: API used to send call off request for Outbound, updatable one time.
+        Request will be created immediately independent of the date sent in the request.
+        dd_call_off_date_importer and reexport_call_off_date_importer have to be null.
+        https://alp.alcolm.com/api/v2/client/orders/update/call/off/date
+      parameters:
+      - in: body
+        name: body
+        description: Send Outbound call off request
+        required: true
+        schema:
+          "$ref": "#/definitions/OrderUpdateCallOffDate"
+      requestBody:
+        description: Send Outbound call off request
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrderUpdateCallOffDate"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/locations/store":
+    post:
+      tags:
+      - Locations
+      summary: create location
+      description: API Used to Create Location and Get Location Code. If the requested
+        location is existing you will receive the code otherwise it will be created
+        in the system and you will receive a new location code. https://alp.alcolm.com/api/v2/client/locations/store
+      parameters:
+      - in: body
+        name: body
+        description: Create Location and Get Location Code.
+        required: true
+        schema:
+          "$ref": "#/definitions/Location"
+      requestBody:
+        description: Create Location and Get Location Code.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Location"
+        required: true
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/detail/{ORDER_ID}":
+    get:
+      tags:
+      - Order
+      summary: get all order details
+      description: API used to get all order details. https://http://alp.alcolm.com/api/v2/client/orders/detail/{ORDER_ID}
+      parameters:
+      - in: path
+        name: ORDER_ID
+        description: get all order details.
+        required: true
+        type: integer
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+  "/orders/reset/transport/request":
+    get:
+      tags:
+      - Order
+      summary: Reset Transport Request
+      description: API used to Reset/Delete Transport Request. https://alp.alcolm.com/api/v2/client/orders/reset/transport/request
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Request or order number is invalid.
+        '419':
+          description: Maximum request per minute reached. Wait for a while and then
+            try again
+        '422':
+          description: Validation error. You will receive response as a json with
+            field names and array of Errors
+        '500':
+          description: Server error. Please in this case send an email to support@alcolm.com
+            with error details
+components:
+  schemas:
+    Country:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    Contact:
+      required:
+      - email
+      - first_name
+      - last_name
+      - mobile
+      - phone
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        mobile:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+    Order:
+      type: object
+      required:
+      - order_type
+      - order_code
+      - brand_name
+      - factory_reference_number
+      - model_code
+      - version_type
+      - category
+      - fuel_type
+      - delivery_place_importer
+      properties:
+        order_type:
+          type: string
+          description: 1 or 2. 1 means client related (will be handled with priority).2
+            means for stock
+          enum:
+          - '1'
+          - '2'
+        order_code:
+          type: integer
+        brand_name:
+          type: string
+        factory_reference_number:
+          type: string
+        order_country:
+          type: string
+        mpo_number:
+          type: string
+        model_code:
+          type: string
+        version_type:
+          type: string
+        category:
+          type: string
+        fuel_type:
+          type: string
+        vin_number:
+          type: integer
+        invoice_number_importer:
+          type: string
+        delivery_place_importer:
+          type: string
+        destination_country_importer:
+          type: string
+        dealer_id:
+          type: string
+        dealer_name:
+          type: string
+        delivery_place_dealer:
+          type: string
+        destination_country_dealer:
+          type: string
+        model_description:
+          type: string
+        expected_production_date:
+          type: string
+        actual_production_date:
+          type: string
+        manufacturer_invoice_date:
+          type: string
+        invoice_date_importer:
+          type: string
+    OrderUpdate:
+      type: object
+      properties:
+        order_type:
+          type: string
+          description: pet status in the store
+          enum:
+          - '1'
+          - '2'
+        order_code:
+          type: integer
+        brand_name:
+          type: string
+        factory_reference_number:
+          type: string
+        order_country:
+          type: string
+        mpo_number:
+          type: string
+        model_code:
+          type: string
+        version_type:
+          type: string
+        category:
+          type: string
+        fuel_type:
+          type: string
+        vin_number:
+          type: integer
+        invoice_number_importer:
+          type: string
+        delivery_place_importer:
+          type: string
+        destination_country_importer:
+          type: string
+        dealer_id:
+          type: string
+        dealer_name:
+          type: string
+        delivery_place_dealer:
+          type: string
+        destination_country_dealer:
+          type: string
+        model_description:
+          type: string
+        expected_production_date:
+          type: string
+        actual_production_date:
+          type: string
+        manufacturer_invoice_date:
+          type: string
+        invoice_date_importer:
+          type: string
+    OrderChangeOwnership:
+      type: object
+      required:
+      - order_code
+      - identification_number
+      properties:
+        order_code:
+          type: integer
+        identification_number:
+          type: integer
+    OrderUpdateDTD:
+      type: object
+      required:
+      - order_code
+      - dd_location
+      - dd_call_off_date_importer
+      properties:
+        order_code:
+          type: integer
+        dd_location:
+          type: string
+        dd_call_off_date_importer:
+          type: string
+    OrderReexportCall:
+      type: object
+      required:
+      - order_code
+      - reexport_call_off_date_importer
+      - reexport_location
+      properties:
+        order_code:
+          type: integer
+        reexport_call_off_date_importer:
+          type: string
+        reexport_location:
+          type: string
+    OrderCTCCall:
+      type: object
+      required:
+      - order_code
+      - second_delivery_place_importer
+      - call_off_date_importer
+      properties:
+        order_code:
+          type: integer
+        second_delivery_place_importer:
+          type: string
+        call_off_date_importer:
+          type: string
+    OrderUpdateCallOffDate:
+      type: object
+      required:
+      - order_code
+      - call_off_date_importer
+      properties:
+        order_code:
+          type: integer
+        call_off_date_importer:
+          type: string
+    Location:
+      type: object
+      required:
+      - street
+      - street_no
+      - zip
+      - city
+      - country
+      properties:
+        street:
+          type: string
+        street_no:
+          type: string
+        zip:
+          type: integer
+        city:
+          type: string
+        country:
+          type: string
+    Reexport:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        comments:
+          type: string
+      required:
+        - id
+  requestBodies:
+    UserArray:
+      description: List of user object
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              "$ref": "#/components/schemas/User"
+      required: true
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
