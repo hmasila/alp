@@ -1,0 +1,2849 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Alcom API Documentation",
+    "description": "The ALP API uses HTTPS methods and RESTful endpoints to create, edit, and manage orders in the ALP system. JSON is used as the data interchange format.\n\nIn order to use this API, you need a client account with valid credentials and an API Secret. To get your own API secret login into ALP and visit User Profile page. API secret can be regenerated here as well.\n\nEach Request must contains these two headers\n\nWe accept up to 50 requests per Minute. If you send more than 50 requests you will get 429 status.\n\nAll Dates in request and response should have Y-m-d format.\nThis documentation is divided into two sections:\n1. APIs - Client to call the URL to update the data in the ALP system.\n2. Webhooks - ALP system will call the defined URL when a specific action has been performed.\n\nAll API and Webhook URLs must be POST methods\n",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://virtserver.swaggerhub.com/hanmaslah/ALP/1.0.0",
+      "description": "SwaggerHub API Auto Mocking"
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Authorize user or get the logged in user"
+    },
+    {
+      "name": "dropdowns",
+      "description": "Access to dropdowns"
+    },
+    {
+      "name": "contacts",
+      "description": "Operations about contacts"
+    },
+    {
+      "name": "locations",
+      "description": "Operations about locations"
+    },
+    {
+      "name": "vehicle_arrivals",
+      "description": "Operations about inbound and spot"
+    },
+    {
+      "name": "compound",
+      "description": "Operations about damages, stock, additional service request list and cc pickup announcement list"
+    },
+    {
+      "name": "reexport",
+      "description": "Operations about re-export and pickup announcement lists"
+    },
+    {
+      "name": "outbound",
+      "description": "Operations about pickup announcements and delivery request"
+    },
+    {
+      "name": "upload_doc"
+    },
+    {
+      "name": "order",
+      "description": "Everything about your Orders"
+    },
+    {
+      "name": "location",
+      "description": "Access to Location"
+    }
+  ],
+  "paths": {
+    "/api/a/auth/user": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get the current user",
+        "operationId": "getUser",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/a/auth/sign/in": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logs user into the system",
+        "operationId": "loginUser",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "The email for login",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "description": "The password for login",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "headers": {
+              "X-Rate-Limit": {
+                "description": "calls per hour allowed by the user",
+                "style": "simple",
+                "explode": false,
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Expires-After": {
+                "description": "date in UTC when token expires",
+                "style": "simple",
+                "explode": false,
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid email/password supplied"
+          }
+        }
+      }
+    },
+    "/api/dropdowns/countries": {
+      "get": {
+        "tags": [
+          "dropdowns"
+        ],
+        "summary": "Get a list of countries",
+        "description": "Pass the Content-Timezone and Authorization in the header",
+        "operationId": "getCountries",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/contacts": {
+      "get": {
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Returns a list of contacts",
+        "description": "Returns a list of contacts with pagination",
+        "operationId": "getContacts",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Contact"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/contacts/create": {
+      "post": {
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Create contact",
+        "operationId": "createContact",
+        "requestBody": {
+          "description": "create contact",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Contact"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Contact"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/contacts/detail/{id}": {
+      "get": {
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Edit contact",
+        "description": "Edit a contact with the given id",
+        "operationId": "editContact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of contact to edit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Contact not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Update contact",
+        "description": "Update a contact with the given id",
+        "operationId": "updateContact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of contact to edit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Contact not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "contacts"
+        ],
+        "summary": "Delete a contact",
+        "description": "Delete a contact with the given id",
+        "operationId": "deleteContact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the contact that needs to be deleted",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Contact not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/locations": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "Returns a list of locations",
+        "description": "Returns a list of locations with pagination",
+        "operationId": "getLocations",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/locations/create": {
+      "post": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "Create Location",
+        "operationId": "createLocation",
+        "requestBody": {
+          "description": "create location",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Location"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Location"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/locations/detail/{id}": {
+      "get": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "Edit location",
+        "description": "Edit a location with the given id",
+        "operationId": "editLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of location to edit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "Update location",
+        "description": "Update a location with the given id",
+        "operationId": "updateLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of location to edit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "locations"
+        ],
+        "summary": "Delete a Location",
+        "description": "Delete a location with the given id",
+        "operationId": "deleteLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the location that needs to be deleted",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/inbound/loads/compound/supplier": {
+      "get": {
+        "tags": [
+          "vehicle_arrivals"
+        ],
+        "summary": "Returns a list of inbounds",
+        "description": "Get inbound list",
+        "operationId": "getInbounds",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/inbound/loads/compound/supplier/detail/{id}": {
+      "get": {
+        "tags": [
+          "vehicle_arrivals"
+        ],
+        "summary": "Returns inbound details",
+        "description": "Get inbound details with the given id",
+        "operationId": "getInboundDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of inbound details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "vehicle_arrivals"
+        ],
+        "summary": "Update inbound",
+        "description": "Update inbound with the given id",
+        "operationId": "updateInbound",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of inbound to edit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/spot/loads/compound/supplier": {
+      "get": {
+        "tags": [
+          "vehicle_arrivals"
+        ],
+        "summary": "Returns a list of spots",
+        "description": "Get spot list",
+        "operationId": "getSpots",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/spot/loads/compound/supplier/detail/{id}": {
+      "get": {
+        "tags": [
+          "vehicle_arrivals"
+        ],
+        "summary": "Returns spot details",
+        "description": "Get spot details with the given id",
+        "operationId": "getSpotDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of spot details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "vehicle_arrivals"
+        ],
+        "summary": "Update spot",
+        "description": "Update spot with the given id",
+        "operationId": "updateSpot",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of spot to edit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier/damages": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns a list of all damages",
+        "description": "Get all damages",
+        "operationId": "getDamage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier/damages/{id}": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns damage details",
+        "description": "Get damage details with the given id",
+        "operationId": "getDamageDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of Damage details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Update or repair damage",
+        "description": "Update or repair damage with the given id",
+        "operationId": "updateDamage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of damaged item to repair",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns a list of all stock",
+        "description": "Get all stock",
+        "operationId": "getStock",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier/detail/{id}": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns stock details",
+        "description": "Get stock details with the given id",
+        "operationId": "getStockDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of stock details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Update stock status",
+        "description": "Update stock with the given id",
+        "operationId": "updateStock",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of damaged item to repair",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier/services": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns a list of additional service requests",
+        "description": "Get additional service request list",
+        "operationId": "getASRList",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier/additional/service/detail/{id}": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns additional service request details",
+        "description": "Get additional service request details with the given id",
+        "operationId": "getASRDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of additional service request details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Update additional service request",
+        "description": "Update additional service request with the given id",
+        "operationId": "updateASR",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of additional service request to update",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/inbound/loads/compound/supplier/cc/pick/up/announcements": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns a list of cc pickup announcements",
+        "description": "Get cc pickup announcements list",
+        "operationId": "getPickup",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/inbound/loads/compound/supplier/cc/pick/up/announcements/detail/{id}": {
+      "get": {
+        "tags": [
+          "compound"
+        ],
+        "summary": "Returns cc pickup announcements details",
+        "description": "Get cc pickup announcements details with the given id",
+        "operationId": "getPickupDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of cc pickup announcements details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/reexport/loads/compound/supplier": {
+      "get": {
+        "tags": [
+          "reexport"
+        ],
+        "summary": "Returns a list of reexports",
+        "description": "Get Reexport",
+        "operationId": "getReexport",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/reexport/loads/compound/supplier/detail/{id}": {
+      "get": {
+        "tags": [
+          "reexport"
+        ],
+        "summary": "Returns reexport details",
+        "description": "Get reexport details with the given id",
+        "operationId": "getReexportDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of reexport details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "reexport"
+        ],
+        "summary": "Update additional service request",
+        "description": "Update additional service request with the given id",
+        "operationId": "update_compound_supplier_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of additional service request to update",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/reexport/loads/compound/supplier/pick/up/announcements": {
+      "get": {
+        "tags": [
+          "reexport"
+        ],
+        "summary": "Returns a list of reexports pickup announcements",
+        "description": "Get Reexport pickup announcements lists",
+        "operationId": "getReexportAnnouncements",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/reexport/loads/compound/supplier/detail": {
+      "get": {
+        "tags": [
+          "reexport"
+        ],
+        "summary": "Returns a list of reexports pickup announcements details",
+        "description": "Get Reexport pickup announcements details lists",
+        "operationId": "getReexportAnnouncementsDerails",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/outbound/loads/compound/supplier/pick/up/announcements": {
+      "get": {
+        "tags": [
+          "outbound"
+        ],
+        "summary": "Returns a list of outbound pickup announcements",
+        "description": "Get  pickup announcements  lists",
+        "operationId": "getOutboundPickup",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/outbound/loads/compound/supplier/detail/{id}": {
+      "get": {
+        "tags": [
+          "outbound"
+        ],
+        "summary": "Returns a list of a pickup announcement details",
+        "description": "Get outbound pickup anounement details with the given id",
+        "operationId": "getPickupAnnouncementsDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of reexport details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier/transport/requests": {
+      "get": {
+        "tags": [
+          "outbound"
+        ],
+        "summary": "Returns a list of all delivery requests",
+        "description": "Get delivery request lists",
+        "operationId": "getDeliveryRequest",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to fetch",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/orders/compound/supplier/transport/requests/{id}": {
+      "get": {
+        "tags": [
+          "outbound"
+        ],
+        "summary": "Returns a list of delivery request details",
+        "description": "Get delivery request details with the given id",
+        "operationId": "getDeliveryRequestDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of delivery request details to return",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "outbound"
+        ],
+        "summary": "Accept Delivery request",
+        "description": "Accept Delivery request with the given id",
+        "operationId": "postAcceptRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of delivery request to edit",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "tags": [
+          "upload_doc"
+        ],
+        "summary": "Upload a file",
+        "operationId": "uploadFile",
+        "requestBody": {
+          "description": "create contact",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Contact"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Contact"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/orders/store": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Store a new order",
+        "description": "API used to Store a new order.  https://alp.alcolm.com/api/v2/client/orders/store",
+        "operationId": "storeOrder",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Store a new order",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Order"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "create store",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Order"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Update order",
+        "description": "API used to Update order.  https://alp.alcolm.com/api/v2/client/orders/store/update",
+        "operationId": "updateOrder",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Update order",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/OrderUpdate"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "update order",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/transfer/order/to/next/client": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Transfer ownership to another client",
+        "description": "change order ownership. API can be called after inbound process is completed and are in status 'Stocked'. Make sure call_off_date_importer field is blank. https://alp.alcolm.com/api/v2/client/orders/update/transfer/order/to/next/client",
+        "operationId": "transferOrder",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "change order ownership",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderChangeOwnership"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "transfer order",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderChangeOwnership"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is "
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/dealer/to/dealer/call/off/date": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "create Dealer To Dealer transport request",
+        "description": "API used to create a transport request for dealer to dealer. call_off_date_importer and reexport_call_off_date_importer have to be null. https://alp.alcolm.com/api/v2/client/orders/update/dealer/to/dealer/call/off/date",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "create a transport request for dealer to dealer.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderUpdateDTD"
+            }
+          }
+        ],
+        "operationId": "createDealer",
+        "requestBody": {
+          "description": "create a transport request for dealer to dealer.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderUpdateDTD"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/reexport/call/off/date": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "create a Reexport/Self Pickup transport request",
+        "description": "API used to create a Reexport/Self Pickup transport request. call_off_date_importer has to be null. https://alp.alcolm.com/api/v2/client/orders/update/reexport/call/off/date",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "create a Reexport/Self Pickup transport request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderReexportCall"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "create a Reexport/Self Pickup transport request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderReexportCall"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/compound/to/compound": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "create a Compound to Compound transport request",
+        "description": "API used to create a transport request for Compound to Compound(CC). call_off_date_importer and reexport_call_off_date_importer have to be null. https://alp.alcolm.com/api/v2/client/orders/update/compound/to/compound",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "create a Compound to Compound transport request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderCTCCall"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "create a Compound to Compound transport request.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCTCCall"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/update/call/off/date": {
+      "post": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Send Outbound call off request",
+        "description": "API used to send call off request for Outbound, updatable one time. Request will be created immediately independent of the date sent in the request. dd_call_off_date_importer and reexport_call_off_date_importer have to be null. https://alp.alcolm.com/api/v2/client/orders/update/call/off/date",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Send Outbound call off request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderUpdateCallOffDate"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Send Outbound call off request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderUpdateCallOffDate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/locations/store": {
+      "post": {
+        "tags": [
+          "location"
+        ],
+        "summary": "create location",
+        "description": "API Used to Create Location and Get Location Code. If the requested location is existing you will receive the code otherwise it will be created in the system and you will receive a new location code. https://alp.alcolm.com/api/v2/client/locations/store",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Create Location and Get Location Code.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Location"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Create Location and Get Location Code.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Location"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/detail/{ORDER_ID}": {
+      "get": {
+        "tags": [
+          "order"
+        ],
+        "summary": "get all order details",
+        "description": "API used to get all order details. https://http://alp.alcolm.com/api/v2/client/orders/detail/{ORDER_ID}",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ORDER_ID",
+            "description": "get all order details.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    },
+    "/orders/reset/transport/request": {
+      "get": {
+        "tags": [
+          "order"
+        ],
+        "summary": "Reset Transport Request",
+        "description": "API used to Reset/Delete Transport Request. https://alp.alcolm.com/api/v2/client/orders/reset/transport/request",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Request or order number is invalid."
+          },
+          "419": {
+            "description": "Maximum request per minute reached. Wait for a while and then try again"
+          },
+          "422": {
+            "description": "Validation error. You will receive response as a json with field names and array of Errors"
+          },
+          "500": {
+            "description": "Server error. Please in this case send an email to support@alcolm.com with error details"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Country": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Contact": {
+        "required": [
+          "email",
+          "first_name",
+          "last_name",
+          "mobile",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "mobile": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "username": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "User"
+        }
+      },
+      "Order": {
+        "type": "object",
+        "required": [
+          "order_type",
+          "order_code",
+          "brand_name",
+          "factory_reference_number",
+          "model_code",
+          "version_type",
+          "category",
+          "fuel_type",
+          "delivery_place_importer"
+        ],
+        "properties": {
+          "order_type": {
+            "type": "string",
+            "description": "1 or 2. 1 means client related (will be handled with priority).2 means for stock",
+            "enum": [
+              "1",
+              "2"
+            ]
+          },
+          "order_code": {
+            "type": "integer"
+          },
+          "brand_name": {
+            "type": "string"
+          },
+          "factory_reference_number": {
+            "type": "string"
+          },
+          "order_country": {
+            "type": "string"
+          },
+          "mpo_number": {
+            "type": "string"
+          },
+          "model_code": {
+            "type": "string"
+          },
+          "version_type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "fuel_type": {
+            "type": "string"
+          },
+          "vin_number": {
+            "type": "integer"
+          },
+          "invoice_number_importer": {
+            "type": "string"
+          },
+          "delivery_place_importer": {
+            "type": "string"
+          },
+          "destination_country_importer": {
+            "type": "string"
+          },
+          "dealer_id": {
+            "type": "string"
+          },
+          "dealer_name": {
+            "type": "string"
+          },
+          "delivery_place_dealer": {
+            "type": "string"
+          },
+          "destination_country_dealer": {
+            "type": "string"
+          },
+          "model_description": {
+            "type": "string"
+          },
+          "expected_production_date": {
+            "type": "string"
+          },
+          "actual_production_date": {
+            "type": "string"
+          },
+          "manufacturer_invoice_date": {
+            "type": "string"
+          },
+          "invoice_date_importer": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "Order"
+        }
+      },
+      "OrderUpdate": {
+        "type": "object",
+        "properties": {
+          "order_type": {
+            "type": "string",
+            "description": "pet status in the store",
+            "enum": [
+              "1",
+              "2"
+            ]
+          },
+          "order_code": {
+            "type": "integer"
+          },
+          "brand_name": {
+            "type": "string"
+          },
+          "factory_reference_number": {
+            "type": "string"
+          },
+          "order_country": {
+            "type": "string"
+          },
+          "mpo_number": {
+            "type": "string"
+          },
+          "model_code": {
+            "type": "string"
+          },
+          "version_type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "fuel_type": {
+            "type": "string"
+          },
+          "vin_number": {
+            "type": "integer"
+          },
+          "invoice_number_importer": {
+            "type": "string"
+          },
+          "delivery_place_importer": {
+            "type": "string"
+          },
+          "destination_country_importer": {
+            "type": "string"
+          },
+          "dealer_id": {
+            "type": "string"
+          },
+          "dealer_name": {
+            "type": "string"
+          },
+          "delivery_place_dealer": {
+            "type": "string"
+          },
+          "destination_country_dealer": {
+            "type": "string"
+          },
+          "model_description": {
+            "type": "string"
+          },
+          "expected_production_date": {
+            "type": "string"
+          },
+          "actual_production_date": {
+            "type": "string"
+          },
+          "manufacturer_invoice_date": {
+            "type": "string"
+          },
+          "invoice_date_importer": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "OrderUpdate"
+        }
+      },
+      "OrderChangeOwnership": {
+        "type": "object",
+        "required": [
+          "order_code",
+          "identification_number"
+        ],
+        "properties": {
+          "order_code": {
+            "type": "integer"
+          },
+          "identification_number": {
+            "type": "integer"
+          }
+        },
+        "xml": {
+          "name": "OrderChangeOwnership"
+        }
+      },
+      "OrderUpdateDTD": {
+        "type": "object",
+        "required": [
+          "order_code",
+          "dd_location",
+          "dd_call_off_date_importer"
+        ],
+        "properties": {
+          "order_code": {
+            "type": "integer"
+          },
+          "dd_location": {
+            "type": "string"
+          },
+          "dd_call_off_date_importer": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "OrderChangeOwnership"
+        }
+      },
+      "OrderReexportCall": {
+        "type": "object",
+        "required": [
+          "order_code",
+          "reexport_call_off_date_importer",
+          "reexport_location"
+        ],
+        "properties": {
+          "order_code": {
+            "type": "integer"
+          },
+          "reexport_call_off_date_importer": {
+            "type": "string"
+          },
+          "reexport_location": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "OrderReexportCall"
+        }
+      },
+      "OrderCTCCall": {
+        "type": "object",
+        "required": [
+          "order_code",
+          "second_delivery_place_importer",
+          "call_off_date_importer"
+        ],
+        "properties": {
+          "order_code": {
+            "type": "integer"
+          },
+          "second_delivery_place_importer": {
+            "type": "string"
+          },
+          "call_off_date_importer": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "OrderCTCCall"
+        }
+      },
+      "OrderUpdateCallOffDate": {
+        "type": "object",
+        "required": [
+          "order_code",
+          "call_off_date_importer"
+        ],
+        "properties": {
+          "order_code": {
+            "type": "integer"
+          },
+          "call_off_date_importer": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "OrderUpdateCallOffDate"
+        }
+      },
+      "Location": {
+        "type": "object",
+        "required": [
+          "street",
+          "street_no",
+          "zip",
+          "city",
+          "country"
+        ],
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "street_no": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "integer"
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        },
+        "xml": {
+          "name": "Location"
+        }
+      }
+    },
+    "requestBodies": {
+      "UserArray": {
+        "description": "List of user object",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "required": true
+      }
+    },
+    "securitySchemes": {
+      "api_key": {
+        "type": "apiKey",
+        "name": "api_key",
+        "in": "header"
+      }
+    }
+  }
+}
