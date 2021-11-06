@@ -137,6 +137,12 @@ tags:
   description: Everything about your Orders
 - name: Location
   description: Access to Location
+- name: Carrier
+  description: Access to Carrier
+- name: Dealer
+  description: Access to Dealer
+- name: Client
+  description: Access to Client
 x-tagGroups:
 - name: Vehicle Arrivals
   tags:
@@ -152,10 +158,15 @@ x-tagGroups:
   - Stock
   - Additional Service Requests
   - CC Pickup Announcements
-- name: Outbound
+- name: Client/Importer
   tags:
-  - Pickup Announcements
-  - Delivery Request
+  - Client
+- name: Carrier
+  tags:
+  - Carrier
+- name: Dealer
+  tags:
+  - Dealer
 - name: Other Endpoints
   tags:
   - Auth
