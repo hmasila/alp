@@ -24,7 +24,10 @@ info:
 
     | Date      | Details of changes |
     | ----------- | ----------- |
-    |       |        |
+    |    2021-10-18  |   <ul><li>item1</li><li>item2</li></ul>     |
+    |    2021-09-23  |   <ul><li>item1</li><li>item2</li></ul>     |
+    |    2021-08-13  |   <ul><li>item1</li><li>item2</li></ul>     |
+    |    2021-07-28  |   <ul><li>item1</li><li>item2</li></ul>     |
 
     # API basics
 
